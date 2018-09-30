@@ -6,10 +6,10 @@ TMPDIR=$(mktemp -d)
 pushd ${TMPDIR}
 
 # Test - install with custom prefix (use sudo to make Travis-CI happy)
-sudo "${BUILDDIR}/sget" --prefix ${HOME} install https://github.com/d99kris/sget
+sudo "${BUILDDIR}/sget" --prefix /tmp install https://github.com/d99kris/sget
 which sget > /dev/null
 if [[ ! -f "${HOME}/bin/sget" ]]; then
-  echo "not able to install software in custom prefix ${HOME}/"
+  echo "not able to install software in custom prefix /tmp/"
   exit 1
 fi
 
