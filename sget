@@ -1,0 +1,288 @@
+#!/usr/bin/env bash
+
+# Copyright (c) 2018 Kristofer Berggren
+# All rights reserved.
+#
+# sget is distributed under the MIT license, see LICENSE for details.
+
+show_usage()
+{
+  echo "sget (source get) enables installation of software from source packages."
+  echo ""
+  echo "Usage: [sudo] sget [--prefix PREFIX] install PKG [PKG ...]"
+  echo "   or: [sudo] sget [--prefix PREFIX] remove PKG [PKG ...]"
+  echo "   or: sget --help"
+  echo "   or: sget --version"
+  echo ""
+  echo "Options:"
+  echo "   PKG          web link to a version controlled (Subversion or Git) "
+  echo "                repository or web link to a source code package, or path "
+  echo "                to a locally stored source code package"
+  echo "   install      builds and installs specified package"
+  echo "   remove       uninstalls specified package"
+  echo "   PREFIX       specifies an alternative installation prefix path"
+  echo "   --help       display this help and exit"
+  echo "   --version    output version information and exit"
+  echo ""
+  echo "Examples:"
+  echo "   sget install https://github.com/d99kris/heapusage   # install from repository"
+  echo ""
+  echo "   sget install ~/Downloads/heapusage-master.zip       # install local package"
+  echo ""
+  echo "   sget remove https://github.com/d99kris/heapusage    # uninstall"
+  echo ""
+  echo "Report bugs at https://github.com/d99kris/sget"
+  echo ""
+}
+
+show_version()
+{
+  echo "sget v1.0"
+  echo ""
+  echo "Copyright (c) 2018 Kristofer Berggren"
+  echo ""
+  echo "sget is distributed under the MIT license."
+  echo ""
+  echo "Written by Kristofer Berggren"
+}
+
+get_extcmd()
+{
+  case "${1}" in
+    *.tar.bz2)
+      echo "tar xjf"
+      ;;
+    *.tar.gz)
+      echo "tar xzf"
+      ;;
+    *.tar.xz)
+      echo "tar xf"
+      ;;
+    *.tar.Z)
+      echo "tar xzf"
+      ;;
+    *.bz2)
+      echo "bunzip2"
+      ;;
+    *.rar)
+      echo "unrar x"
+      ;;
+    *.gz)
+      echo "gunzip"
+      ;;
+    *.jar)
+      echo "unzip"
+      ;;
+    *.tar)
+      echo "tar xf"
+      ;;
+    *.tbz2)
+      echo "tar xjf"
+      ;;
+    *.tgz)
+      echo "tar xzf"
+      ;;
+    *.zip)
+      echo "unzip"
+      ;;
+    *.Z)
+      echo "uncompress"
+      ;;
+    *)
+      echo ""
+      ;;
+  esac
+}
+
+ACTION=""
+PREFIX=""
+while [[ ${#} -gt 0 ]]; do
+  case "${1}" in
+    --help)
+      show_usage
+      exit 0
+      ;;
+    --version)
+      show_version
+      exit 0
+      ;;
+    --prefix)
+      PREFIX="$(realpath ${2} 2> /dev/null)"
+      shift
+      shift
+      ;;
+    install)
+      ACTION="${1}"
+      MAKECMD="install"
+      shift
+      break
+      ;;
+    remove)
+      ACTION="${1}"
+      MAKECMD="uninstall"
+      shift
+      break
+      ;;
+    *)
+      show_usage
+      exit 1
+      ;;
+  esac
+done
+
+if [[ "${ACTION}" == "" ]] || [[ "${#}" == "0" ]]; then
+  show_usage
+  exit 1
+fi
+
+if [[ "$(whoami)" == "root" ]]; then
+  USER_NAME=$(printf '%s' "${SUDO_USER:-$USER}")
+  ASUSER="sudo -u ${USER_NAME} "
+else
+  ASUSER=""
+fi
+
+TMPDIR="$(${ASUSER} mktemp -d)"
+
+error()
+{
+  >&2 echo "sget:${1} error: ${2}" 
+  cd
+  ${ASUSER} rm -rf "${TMPDIR}"
+  exit 1
+}
+
+if [[ "${PREFIX}" != "" ]] && [[ ! -d "${PREFIX}" ]]; then
+  error ${LINENO} "specified prefix \"${PREFIX}\" does not exist"
+fi
+
+if [[ "$(uname)" != "Darwin" ]] && [[ "$(whoami)" != "root" ]]; then
+  if [[ "${PREFIX}" == "" ]] || [[ ! -w "${PREFIX}" ]]; then
+    error ${LINENO} "no permission to install - try re-run with sudo"
+  fi
+fi
+
+while [[ ${#} -gt 0 ]]; do
+  echo "sget: ${ACTION} ${1}"
+  REALPATH="$(realpath ${1} 2> /dev/null)"
+  PKGTMPDIR="$(${ASUSER} mktemp -d "${TMPDIR}/package.XXXXXXXXX")"
+  pushd "${PKGTMPDIR}" > /dev/null
+  EXTCMD="$(get_extcmd ${1})"
+  case "${1}" in
+    http://* | https://*)
+      if [[ "${EXTCMD}" == "" ]]; then
+        ${ASUSER} git clone "${1}" || \
+        ${ASUSER} svn co "${1}" || \
+        error ${LINENO} "git/svn download failed for ${1}"
+      else
+        TMPARCH=".sget_archive"
+        ${ASUSER} curl -L -o ${TMPARCH} "${1}" || \
+        error ${LINENO} "curl download failed for ${1}"
+
+        ${ASUSER} ${EXTCMD} ${TMPARCH} || \
+        error ${LINENO} "package extract \"${ASUSER}${EXTCMD} ${TMPARCH}\" failed for ${1}"
+
+        ${ASUSER} rm ${TMPARCH} || \
+        error ${LINENO} "cleanup \"${ASUSER}rm ${TMPARCH}\" failed for ${1}"
+      fi
+      ;;
+    *)
+      if [[ "${EXTCMD}" == "" ]]; then
+        error ${LINENO} "unsupported package file format for ${1}"
+      else
+        ${ASUSER} ${EXTCMD} "${REALPATH}" || \
+        error ${LINENO} "package extract \"${ASUSER}${EXTCMD} ${1}\" failed for ${1}"
+      fi
+      ;;
+  esac
+
+  EXTRACTDIR="$(${ASUSER} ls -1d */ 2> /dev/null | head -1)"
+  if [[ "${EXTRACTDIR}" != "" ]]; then
+    pushd "${EXTRACTDIR}" > /dev/null
+
+    if [[ -f "CMakeLists.txt" ]]; then
+      BUILDDIR="$(${ASUSER} mktemp -d "$(pwd)/build.XXXXXXXXX")"
+      if [[ "${PREFIX}" != "" ]]; then
+        CMAKEPREFIXARG="-DCMAKE_INSTALL_PREFIX=${PREFIX}"
+      else
+        CMAKEPREFIXARG=""
+      fi
+      pushd "${BUILDDIR}" > /dev/null
+      ${ASUSER} cmake ${CMAKEPREFIXARG} .. || \
+      error ${LINENO} "build command \"${ASUSER}cmake ${CMAKEPREFIXARG} ..\" failed for ${1}"
+
+      ${ASUSER} make -s || \
+      error ${LINENO} "build command \"${ASUSER}make -s\" failed for ${1}"
+
+      make ${MAKECMD} || \
+      error ${LINENO} "${ACTION} command \"make ${MAKECMD}\" failed for ${1}"
+
+      popd > /dev/null
+
+    elif [[ -f "autogen.sh" ]]; then
+      if [[ "${PREFIX}" != "" ]]; then
+        CONFPREFIXARG="--prefix=${PREFIX}"
+      else
+        CONFPREFIXARG=""
+      fi
+
+      ${ASUSER} sh autogen.sh || \
+      error ${LINENO} "build command \"${ASUSER}sh autogen.sh\" failed for ${1}"
+
+      ${ASUSER} ./configure ${CONFPREFIXARG} || \
+      error ${LINENO} "build command \"${ASUSER}./configure ${CONFPREFIXARG}\" failed for ${1}"
+      
+      ${ASUSER} make -s || \
+      error ${LINENO} "build command \"${ASUSER}make -s\" failed for ${1}"
+
+      make ${MAKECMD} ${MAKEPREFIXARG} || \
+      error ${LINENO} "${ACTION} command \"make ${MAKECMD} ${MAKEPREFIXARG}\" failed for ${1}"
+
+    elif [[ -f "configure" ]]; then
+      if [[ "${PREFIX}" != "" ]]; then
+        CONFPREFIXARG="--prefix=${PREFIX}"
+      else
+        CONFPREFIXARG=""
+      fi
+
+      ${ASUSER} ./configure ${CONFPREFIXARG} || \
+      error ${LINENO} "build command \"${ASUSER}./configure ${CONFPREFIXARG}\" failed for ${1}"
+      
+      ${ASUSER} make -s || \
+      error ${LINENO} "build command \"${ASUSER}make -s\" failed for ${1}"
+
+      make ${MAKECMD} ${MAKEPREFIXARG} || \
+      error ${LINENO} "${ACTION} command \"make ${MAKECMD} ${MAKEPREFIXARG}\" failed for ${1}"
+
+    elif [[ -f "Makefile" ]]; then
+      if [[ "${PREFIX}" != "" ]]; then
+        MAKEPREFIXARG="DESTDIR=${PREFIX}"
+      else
+        MAKEPREFIXARG=""
+      fi
+
+      ${ASUSER} make -s || \
+      error ${LINENO} "build command \"${ASUSER}make -s\" failed for ${1}"
+
+      make ${MAKECMD} ${MAKEPREFIXARG} || \
+      error ${LINENO} "${ACTION} command \"make ${MAKECMD} ${MAKEPREFIXARG}\" failed for ${1}"
+
+    else
+      error ${LINENO} "no supported Makefile nor Makefile generator found for ${1}"
+    fi
+
+    echo "sget: ${ACTION} successful for ${1}"
+    
+    popd > /dev/null
+  else
+    error ${LINENO} "no source directory found in $(pwd) [$(ls -la)] for ${1}"
+  fi
+
+  shift
+  popd > /dev/null
+  ${ASUSER} rm -rf "${PKGTMPDIR}"
+done
+
+${ASUSER} rm -rf "${TMPDIR}"
+exit 0
+

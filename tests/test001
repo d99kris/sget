@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# Environment
+BUILDDIR="$(pwd)"
+TMPDIR=$(mktemp -d)
+pushd ${TMPDIR}
+
+# Test - install with default prefix
+sudo "${BUILDDIR}/sget" install https://github.com/d99kris/sget
+which sget > /dev/null
+if [[ "${?}" != "0" ]]; then
+  echo "not able to install software in default prefix"
+  exit 1
+fi
+
+# Cleanup
+popd
+rm -rf ${TMPDIR}
+exit 0
