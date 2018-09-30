@@ -135,6 +135,12 @@ if [[ "${ACTION}" == "" ]] || [[ "${#}" == "0" ]]; then
   exit 1
 fi
 
+which realpath > /dev/null
+if [[ "${?}" != "0" ]]; then
+  echo "sget: required dependency 'realpath' not available, exiting."
+  exit 1
+fi
+
 if [[ "$(whoami)" == "root" ]]; then
   USER_NAME=$(printf '%s' "${SUDO_USER:-$USER}")
   ASUSER="sudo -u ${USER_NAME} "
