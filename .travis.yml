@@ -2,7 +2,7 @@ language:
   - c
 
 sudo:
-  - false
+  - required
 
 os:
   - linux
