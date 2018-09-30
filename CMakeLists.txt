@@ -1,6 +1,5 @@
 # Project
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
-project(tenv VERSION 1.0)
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 # Program
 configure_file(sget ${CMAKE_CURRENT_BINARY_DIR}/sget COPYONLY)
