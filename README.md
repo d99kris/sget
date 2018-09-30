@@ -8,8 +8,8 @@ Example Usage
 
     $ sudo sget install https://github.com/d99kris/heapusage
 
-Why?
-====
+Why
+===
 Standard package managers (apt, brew, yum, etc) handling dependency resolution,
 updates, etc is generally the preferred way to install software. The sget
 utility mainly caters for installation of softwares not (yet) available through
