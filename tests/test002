@@ -8,7 +8,7 @@ pushd ${TMPDIR}
 # Test - install with custom prefix
 "${BUILDDIR}/sget" --prefix /tmp install https://github.com/d99kris/sget
 which sget > /dev/null
-if [[ -f "/tmp/bin/sget" ]]; then
+if [[ ! -f "/tmp/bin/sget" ]]; then
   echo "not able to install software in custom prefix /tmp"
   exit 1
 fi
