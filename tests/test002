@@ -10,6 +10,7 @@ sudo "${BUILDDIR}/sget" --prefix /tmp install https://github.com/d99kris/sget
 which sget > /dev/null
 if [[ ! -f "${HOME}/bin/sget" ]]; then
   echo "not able to install software in custom prefix /tmp/"
+  ls -lRa /tmp/  
   exit 1
 fi
 
