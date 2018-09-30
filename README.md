@@ -6,7 +6,7 @@ Sget (source get) - install software from source packages.
 Example Usage
 =============
 
-    ~$ sudo sget install https://github.com/d99kris/heapusage
+    $ sudo sget install https://github.com/d99kris/heapusage
 
 Why?
 ====
@@ -23,7 +23,11 @@ Installation
 ============
 Download sget script:
 
-    curl -o /tmp/sget TBD
+    curl -o /tmp/sget https://raw.githubusercontent.com/d99kris/sget/master/sget
+
+Set executable flag:
+
+    chmod +x /tmp/sget
 
 Use sget script to install sget (may omit sudo for macOS):
 
