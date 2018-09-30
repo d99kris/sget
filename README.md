@@ -1,6 +1,10 @@
 Sget
 ====
 
+| **Linux + Mac** |
+|-----------------|
+| [![Build status](https://travis-ci.org/d99kris/sget.svg?branch=master)](https://travis-ci.org/d99kris/sget) |
+
 Sget (source get) - install software from source packages.
 
 Example Usage
