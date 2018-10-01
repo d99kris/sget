@@ -205,6 +205,7 @@ while [[ ${#} -gt 0 ]]; do
   EXTRACTDIR="$(${ASUSER} ls -1d */ 2> /dev/null | head -1)"
   if [[ "${EXTRACTDIR}" != "" ]]; then
     pushd "${EXTRACTDIR}" > /dev/null
+    PROEXTFILE="$(ls *.pro 2> /dev/null | head -1)"
 
     if [[ -f "CMakeLists.txt" ]]; then
       BUILDDIR="$(${ASUSER} mktemp -d "$(pwd)/build.XXXXXXXXX")"
@@ -266,6 +267,22 @@ while [[ ${#} -gt 0 ]]; do
       else
         MAKEPREFIXARG=""
       fi
+
+      ${ASUSER} make -s || \
+      error ${LINENO} "build command \"${ASUSER}make -s\" failed for ${1}"
+
+      make ${MAKECMD} ${MAKEPREFIXARG} || \
+      error ${LINENO} "${ACTION} command \"make ${MAKECMD} ${MAKEPREFIXARG}\" failed for ${1}"
+
+    elif [[ "${PROEXTFILE}" != "" ]]; then
+      if [[ "${PREFIX}" != "" ]]; then
+        QMAKEPREFIXARG="PREFIX=${PREFIX}"
+      else
+        QMAKEPREFIXARG=""
+      fi
+
+      ${ASUSER} qmake ${QMAKEPREFIXARG} || \
+      error ${LINENO} "build command \"${ASUSER}qmake ${QMAKEPREFIXARG}\" failed for ${1}"
 
       ${ASUSER} make -s || \
       error ${LINENO} "build command \"${ASUSER}make -s\" failed for ${1}"
