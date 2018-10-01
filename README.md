@@ -5,7 +5,9 @@ Sget
 |-----------------|
 | [![Build status](https://travis-ci.org/d99kris/sget.svg?branch=master)](https://travis-ci.org/d99kris/sget) |
 
-Sget (source get) - install software from source packages.
+Sget (source get) - is a small utility facilitating installation of software from source
+packages, by automating the process of downloading the source and doing configure, make,
+sudo make install.
 
 Example Usage
 =============
@@ -25,21 +27,25 @@ Sget should work on most Linux and macOS systems.
 
 Installation
 ============
-Download sget script:
 
-    curl -o /tmp/sget https://raw.githubusercontent.com/d99kris/sget/master/sget
+Using sget
+----------
 
-Set executable flag:
+    wget -qO - https://raw.githubusercontent.com/d99kris/sget/master/sget | sudo bash -s -- install https://github.com/d99kris/sget
 
-    chmod +x /tmp/sget
+From source
+-----------
+Download source:
 
-Use sget script to install sget (may omit sudo for macOS):
+    git clone https://github.com/d99kris/sget
 
-    sudo /tmp/sget install https://github.com/d99kris/sget
+Build:
 
-Delete sget script:
+    cd sget && mkdir -p build && cd build && cmake .. && make -s
 
-    rm /tmp/sget
+Install:
+
+    sudo make install
 
 Usage
 =====
