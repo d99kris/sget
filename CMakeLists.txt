@@ -1,6 +1,6 @@
 # Project
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-project(sget LANGUAGES NONE)
+project(sget NONE)
 
 # Program
 configure_file(sget ${CMAKE_CURRENT_BINARY_DIR}/sget COPYONLY)
