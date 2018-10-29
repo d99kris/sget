@@ -1,5 +1,6 @@
 # Project
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+project(sget LANGUAGES NONE)
 
 # Program
 configure_file(sget ${CMAKE_CURRENT_BINARY_DIR}/sget COPYONLY)
@@ -7,6 +8,12 @@ install(PROGRAMS sget DESTINATION bin)
 
 # Manuals
 install(FILES sget.1 DESTINATION share/man/man1)
+
+# Uninstall
+add_custom_target(uninstall
+  COMMAND "${CMAKE_COMMAND}" -E remove "${CMAKE_INSTALL_PREFIX}/bin/sget"
+  COMMAND "${CMAKE_COMMAND}" -E remove "${CMAKE_INSTALL_PREFIX}/share/man/man1/sget.1"
+)
 
 # Test init
 enable_testing()

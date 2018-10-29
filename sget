@@ -9,6 +9,15 @@ show_usage()
 {
   echo "sget (source get) enables installation of software from source packages."
   echo ""
+  echo "It supports installation from a remote Git/Subversion repository, an URL"
+  echo "to a source package, a local file path to a source package or a local"
+  echo "directory path."
+  echo ""
+  echo "Most common package/archive formats (tar, zip, rar, etc) are supported."
+  echo ""
+  echo "It supports plain Makefile as well as several generators:"
+  echo "autogen, cmake, configure, qmake"
+  echo ""
   echo "Usage: [sudo] sget [--prefix PREFIX] install PKG [PKG ...]"
   echo "   or: [sudo] sget [--prefix PREFIX] remove PKG [PKG ...]"
   echo "   or: sget --help"
@@ -16,8 +25,9 @@ show_usage()
   echo ""
   echo "Options:"
   echo "   PKG          web link to a version controlled (Subversion or Git) "
-  echo "                repository or web link to a source code package, or path "
-  echo "                to a locally stored source code package"
+  echo "                repository or web link to a source code package, path "
+  echo "                to a locally stored source code package, or path "
+  echo "                to a local directory containing source code. "
   echo "   install      builds and installs specified package"
   echo "   remove       uninstalls specified package"
   echo "   PREFIX       specifies an alternative installation prefix path"
@@ -25,11 +35,11 @@ show_usage()
   echo "   --version    output version information and exit"
   echo ""
   echo "Examples:"
-  echo "   sget install https://github.com/d99kris/heapusage   # install from repository"
+  echo "   sudo sget install https://github.com/d99kris/heapusage   # install from repository"
   echo ""
-  echo "   sget install ~/Downloads/heapusage-master.zip       # install local package"
+  echo "   sudo sget install ~/Downloads/heapusage-master.zip       # install local package"
   echo ""
-  echo "   sget remove https://github.com/d99kris/heapusage    # uninstall"
+  echo "   sudo sget remove https://github.com/d99kris/heapusage    # uninstall"
   echo ""
   echo "Report bugs at https://github.com/d99kris/sget"
   echo ""
@@ -94,8 +104,10 @@ get_extcmd()
   esac
 }
 
+ORGCMD=("$@")
 ACTION=""
 PREFIX=""
+TMPDIR=""
 while [[ ${#} -gt 0 ]]; do
   case "${1}" in
     --help)
@@ -105,6 +117,11 @@ while [[ ${#} -gt 0 ]]; do
     --version)
       show_version
       exit 0
+      ;;
+    --tmpdir)
+      TMPDIR="${2}"
+      shift
+      shift
       ;;
     --prefix)
       PREFIX="$(realpath ${2} 2> /dev/null)"
@@ -148,13 +165,24 @@ else
   ASUSER=""
 fi
 
-TMPDIR="$(${ASUSER} mktemp -d)"
+# run a copy of sget, to enable updating and uninstallation of itself 
+run_sget()
+{
+  TMPDIR="$(${ASUSER} mktemp -d)"
+  cp "${BASH_SOURCE[0]}" "${TMPDIR}/sget"
+  "${TMPDIR}/sget" --tmpdir "${TMPDIR}" "${ORGCMD[@]}" ; STATUS="${?}"
+  ${ASUSER} rm -rf "${TMPDIR}"
+  exit ${STATUS}
+}
+
+if [[ "${TMPDIR}" == "" ]]; then
+  run_sget
+fi
 
 error()
 {
   >&2 echo "sget:${1} error: ${2}" 
   cd
-  ${ASUSER} rm -rf "${TMPDIR}"
   exit 1
 }
 
@@ -170,10 +198,10 @@ fi
 
 while [[ ${#} -gt 0 ]]; do
   echo "sget: ${ACTION} ${1}"
-  REALPATH="$(realpath ${1} 2> /dev/null)"
+  REALPATH="$(realpath "${1}" 2> /dev/null)"
   PKGTMPDIR="$(${ASUSER} mktemp -d "${TMPDIR}/package.XXXXXXXXX")"
   pushd "${PKGTMPDIR}" > /dev/null
-  EXTCMD="$(get_extcmd ${1})"
+  EXTCMD="$(get_extcmd "${1}")"
   case "${1}" in
     http://* | https://*)
       if [[ "${EXTCMD}" == "" ]]; then
@@ -193,7 +221,10 @@ while [[ ${#} -gt 0 ]]; do
       fi
       ;;
     *)
-      if [[ "${EXTCMD}" == "" ]]; then
+      if [[ -d "${REALPATH}" ]]; then
+        ${ASUSER} cp -a "${REALPATH}" . || \
+        error ${LINENO} "directory copy \"${ASUSER}cp -a \"${REALPATH}\" .\" failed for ${1}"
+      elif [[ "${EXTCMD}" == "" ]]; then
         error ${LINENO} "unsupported package file format for ${1}"
       else
         ${ASUSER} ${EXTCMD} "${REALPATH}" || \
