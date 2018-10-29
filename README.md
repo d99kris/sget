@@ -9,10 +9,17 @@ Sget (source get) - is a small utility facilitating installation of software fro
 packages, by automating the process of downloading the source and doing configure, make,
 sudo make install.
 
+It supports installation from a remote Git/Subversion repository, an URL to a source package,
+a local file path to a source package or a local directory path.
+
+Most common package/archive formats (tar, zip, rar, etc) are supported.
+
+It supports plain Makefile as well as several generators: autogen, cmake, configure, qmake
+
 Example Usage
 =============
 
-    $ sudo sget install https://github.com/d99kris/heapusage
+    $ sudo sget install https://github.com/tmux/tmux
 
 Why
 ===
@@ -35,17 +42,17 @@ Using sget
 
 From source
 -----------
-Download source:
+1. Download source:
 
     git clone https://github.com/d99kris/sget
 
-Build:
+2a. From source using sget itself:
 
-    cd sget && mkdir -p build && cd build && cmake .. && make -s
+    cd sget && sudo ./sget install . 
 
-Install:
+2b. Alternatively install and build manually:
 
-    sudo make install
+    cd sget && mkdir -p build && cd build && cmake .. && make -s && sudo make install
 
 Usage
 =====
@@ -70,11 +77,13 @@ Options:
 
 Examples:
 
-    sget install https://github.com/d99kris/heapusage   # install from repository
+    sget install https://github.com/tmux/tmux           # install from repository
 
-    sget install ~/Downloads/heapusage-master.zip       # install local package
+    sget install ~/Downloads/tmux-2.8.tar.gz            # install local package
 
-    sget remove https://github.com/d99kris/heapusage    # uninstall
+    sget install ~/tmux-2.8                             # install local dir
+
+    sget remove https://github.com/tmux/tmux            # uninstall
 
 Technical Details
 =================
