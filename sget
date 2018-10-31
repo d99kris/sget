@@ -172,19 +172,25 @@ run_sget()
 {
   TMPDIR="$(${ASUSER} mktemp -d)"
   cp "${BASH_SOURCE[0]}" "${TMPDIR}/sget"
-  "${TMPDIR}/sget" --tmpdir "${TMPDIR}" "${ORGCMD[@]}" ; STATUS="${?}"
-  ${ASUSER} rm -rf "${TMPDIR}"
-  exit ${STATUS}
+  "${TMPDIR}/sget" --tmpdir "${TMPDIR}" "${ORGCMD[@]}"
+  exit ${?}
 }
 
 if [[ "${TMPDIR}" == "" ]]; then
-  run_sget
+  if [[ "${0}" != "${BASH_SOURCE}" ]]; then
+    # script is sourced
+    TMPDIR="$(${ASUSER} mktemp -d)"
+  else
+    # script is run
+    run_sget
+  fi
 fi
 
 error()
 {
   >&2 echo "sget:${1} error: ${2}" 
   cd
+  ${ASUSER} rm -rf "${TMPDIR}"
   exit 1
 }
 
