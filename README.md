@@ -50,7 +50,7 @@ From source
 
         sudo ./sget install . 
 
-Alternatively install and build manually:
+3. Alternatively install and build manually:
 
         mkdir -p build && cd build && cmake .. && make -s && sudo make install
 
