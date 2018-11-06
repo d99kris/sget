@@ -44,15 +44,15 @@ From source
 -----------
 1. Download source:
 
-    git clone https://github.com/d99kris/sget && cd sget
+        git clone https://github.com/d99kris/sget && cd sget
 
 2. From source using sget itself:
 
-    sudo ./sget install . 
+        sudo ./sget install . 
 
 Alternatively install and build manually:
 
-    mkdir -p build && cd build && cmake .. && make -s && sudo make install
+        mkdir -p build && cd build && cmake .. && make -s && sudo make install
 
 Usage
 =====
