@@ -38,7 +38,13 @@ Installation
 Using sget
 ----------
 
-    wget -qO - https://raw.githubusercontent.com/d99kris/sget/master/sget | sudo bash -s -- install https://github.com/d99kris/sget
+Linux
+
+    curl -s -L https://raw.githubusercontent.com/d99kris/sget/master/sget | sudo bash -s -- install https://github.com/d99kris/sget
+
+Mac
+
+    curl -s -L https://raw.githubusercontent.com/d99kris/sget/master/sget | bash -s -- install https://github.com/d99kris/sget
 
 From source
 -----------
