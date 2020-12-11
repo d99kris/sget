@@ -1,9 +1,9 @@
 Sget
 ====
 
-| **Linux + Mac** |
-|-----------------|
-| [![Build status](https://travis-ci.com/d99kris/sget.svg?branch=master)](https://travis-ci.com/d99kris/sget) |
+| **Linux** | **Mac** |
+|-----------|---------|
+| [![Linux](https://github.com/d99kris/sget/workflows/Linux/badge.svg)](https://github.com/d99kris/sget/actions?query=workflow%3ALinux) | [![macOS](https://github.com/d99kris/sget/workflows/macOS/badge.svg)](https://github.com/d99kris/sget/actions?query=workflow%3AmacOS) |
 
 Sget (source get) - is a small utility facilitating installation of software from source
 packages, by automating the process of downloading the source and doing configure, make,
