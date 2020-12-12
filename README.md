@@ -5,16 +5,18 @@ Sget
 |-----------|---------|
 | [![Linux](https://github.com/d99kris/sget/workflows/Linux/badge.svg)](https://github.com/d99kris/sget/actions?query=workflow%3ALinux) | [![macOS](https://github.com/d99kris/sget/workflows/macOS/badge.svg)](https://github.com/d99kris/sget/actions?query=workflow%3AmacOS) |
 
-Sget (source get) - is a small utility facilitating installation of software from source
-packages, by automating the process of downloading the source and doing configure, make,
-sudo make install.
+Sget (source get) - is a small utility facilitating installation of software
+from source packages, by automating the process of downloading the source and
+doing configure, make, sudo make install.
 
-It supports installation from a remote Git/Subversion repository, an URL to a source package,
-a local file path to a source package or a local directory path.
+It supports installation from a remote Git/Subversion repository, an URL to a
+source package, a local file path to a source package or a local directory
+path.
 
 Most common package/archive formats (tar, zip, rar, etc) are supported.
 
-It supports plain Makefile as well as several generators: autogen, cmake, configure, qmake
+It supports plain Makefile as well as several generators: autogen, cmake,
+configure, qmake
 
 Example Usage
 =============
