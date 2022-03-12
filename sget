@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (c) 2018 Kristofer Berggren
+# Copyright (c) 2018-2022 Kristofer Berggren
 # All rights reserved.
 #
 # sget is distributed under the MIT license, see LICENSE for details.
@@ -49,9 +49,9 @@ show_usage()
 
 show_version()
 {
-  echo "sget v1.02"
+  echo "sget v1.03"
   echo ""
-  echo "Copyright (c) 2018 Kristofer Berggren"
+  echo "Copyright (c) 2018-2022 Kristofer Berggren"
   echo ""
   echo "sget is distributed under the MIT license."
   echo ""
@@ -132,13 +132,13 @@ while [[ ${#} -gt 0 ]]; do
       ;;
     install)
       ACTION="${1}"
-      MAKECMD="install"
+      MAKEINSTCMD="install"
       shift
       break
       ;;
     remove)
       ACTION="${1}"
-      MAKECMD="uninstall"
+      MAKEINSTCMD="uninstall"
       shift
       break
       ;;
@@ -241,6 +241,14 @@ while [[ ${#} -gt 0 ]]; do
       ;;
   esac
 
+  OS="$(uname)"
+  MAKEBUILDARGS="-s"
+  if [ "${OS}" == "Linux" ]; then
+    MAKEBUILDARGS="-s -j$(nproc)"
+  elif [ "${OS}" == "Darwin" ]; then
+    MAKEBUILDARGS="-s -j$(sysctl -n hw.ncpu)"
+  fi
+
   EXTRACTDIR="$(${ASUSER} ls -1d */ 2> /dev/null | head -1)"
   if [[ "${EXTRACTDIR}" != "" ]]; then
     pushd "${EXTRACTDIR}" > /dev/null
@@ -257,11 +265,11 @@ while [[ ${#} -gt 0 ]]; do
       ${ASUSER} cmake ${CMAKEPREFIXARG} .. || \
       error ${LINENO} "build command \"${ASUSER}cmake ${CMAKEPREFIXARG} ..\" failed for ${1}"
 
-      ${ASUSER} make -s || \
-      error ${LINENO} "build command \"${ASUSER}make -s\" failed for ${1}"
+      ${ASUSER} make ${MAKEBUILDARGS} || \
+      error ${LINENO} "build command \"${ASUSER}make ${MAKEBUILDARGS}\" failed for ${1}"
 
-      make ${MAKECMD} || \
-      error ${LINENO} "${ACTION} command \"make ${MAKECMD}\" failed for ${1}"
+      make ${MAKEINSTCMD} || \
+      error ${LINENO} "${ACTION} command \"make ${MAKEINSTCMD}\" failed for ${1}"
 
       popd > /dev/null
 
@@ -278,11 +286,11 @@ while [[ ${#} -gt 0 ]]; do
       ${ASUSER} ./configure ${CONFPREFIXARG} || \
       error ${LINENO} "build command \"${ASUSER}./configure ${CONFPREFIXARG}\" failed for ${1}"
       
-      ${ASUSER} make -s || \
-      error ${LINENO} "build command \"${ASUSER}make -s\" failed for ${1}"
+      ${ASUSER} make ${MAKEBUILDARGS} || \
+      error ${LINENO} "build command \"${ASUSER}make ${MAKEBUILDARGS}\" failed for ${1}"
 
-      make ${MAKECMD} ${MAKEPREFIXARG} || \
-      error ${LINENO} "${ACTION} command \"make ${MAKECMD} ${MAKEPREFIXARG}\" failed for ${1}"
+      make ${MAKEINSTCMD} ${MAKEPREFIXARG} || \
+      error ${LINENO} "${ACTION} command \"make ${MAKEINSTCMD} ${MAKEPREFIXARG}\" failed for ${1}"
 
     elif [[ -f "configure" ]]; then
       if [[ "${PREFIX}" != "" ]]; then
@@ -294,11 +302,11 @@ while [[ ${#} -gt 0 ]]; do
       ${ASUSER} ./configure ${CONFPREFIXARG} || \
       error ${LINENO} "build command \"${ASUSER}./configure ${CONFPREFIXARG}\" failed for ${1}"
       
-      ${ASUSER} make -s || \
-      error ${LINENO} "build command \"${ASUSER}make -s\" failed for ${1}"
+      ${ASUSER} make ${MAKEBUILDARGS} || \
+      error ${LINENO} "build command \"${ASUSER}make ${MAKEBUILDARGS}\" failed for ${1}"
 
-      make ${MAKECMD} ${MAKEPREFIXARG} || \
-      error ${LINENO} "${ACTION} command \"make ${MAKECMD} ${MAKEPREFIXARG}\" failed for ${1}"
+      make ${MAKEINSTCMD} ${MAKEPREFIXARG} || \
+      error ${LINENO} "${ACTION} command \"make ${MAKEINSTCMD} ${MAKEPREFIXARG}\" failed for ${1}"
 
     elif [[ -f "Makefile" ]]; then
       if [[ "${PREFIX}" != "" ]]; then
@@ -307,11 +315,11 @@ while [[ ${#} -gt 0 ]]; do
         MAKEPREFIXARG=""
       fi
 
-      ${ASUSER} make -s || \
-      error ${LINENO} "build command \"${ASUSER}make -s\" failed for ${1}"
+      ${ASUSER} make ${MAKEBUILDARGS} || \
+      error ${LINENO} "build command \"${ASUSER}make ${MAKEBUILDARGS}\" failed for ${1}"
 
-      make ${MAKECMD} ${MAKEPREFIXARG} || \
-      error ${LINENO} "${ACTION} command \"make ${MAKECMD} ${MAKEPREFIXARG}\" failed for ${1}"
+      make ${MAKEINSTCMD} ${MAKEPREFIXARG} || \
+      error ${LINENO} "${ACTION} command \"make ${MAKEINSTCMD} ${MAKEPREFIXARG}\" failed for ${1}"
 
     elif [[ "${PROEXTFILE}" != "" ]]; then
       if [[ "${PREFIX}" != "" ]]; then
@@ -323,11 +331,11 @@ while [[ ${#} -gt 0 ]]; do
       ${ASUSER} qmake ${QMAKEPREFIXARG} || \
       error ${LINENO} "build command \"${ASUSER}qmake ${QMAKEPREFIXARG}\" failed for ${1}"
 
-      ${ASUSER} make -s || \
-      error ${LINENO} "build command \"${ASUSER}make -s\" failed for ${1}"
+      ${ASUSER} make ${MAKEBUILDARGS} || \
+      error ${LINENO} "build command \"${ASUSER}make ${MAKEBUILDARGS}\" failed for ${1}"
 
-      make ${MAKECMD} ${MAKEPREFIXARG} || \
-      error ${LINENO} "${ACTION} command \"make ${MAKECMD} ${MAKEPREFIXARG}\" failed for ${1}"
+      make ${MAKEINSTCMD} ${MAKEPREFIXARG} || \
+      error ${LINENO} "${ACTION} command \"make ${MAKEINSTCMD} ${MAKEPREFIXARG}\" failed for ${1}"
 
     else
       error ${LINENO} "no supported Makefile nor Makefile generator found for ${1}"
