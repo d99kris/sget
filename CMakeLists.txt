@@ -1,5 +1,5 @@
 # Project
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.0...3.19 FATAL_ERROR)
 project(sget NONE)
 
 # Program
