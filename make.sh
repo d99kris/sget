@@ -2,7 +2,7 @@
 
 # make.sh
 #
-# Copyright (C) 2020 Kristofer Berggren
+# Copyright (C) 2020-2025 Kristofer Berggren
 # All rights reserved.
 #
 # See LICENSE for redistribution information.
@@ -70,12 +70,12 @@ if [[ "${DEPS}" == "1" ]]; then
   if [ "${OS}" == "Linux" ]; then
     DISTRO="$(lsb_release -i | awk -F':\t' '{print $2}')"
     if [[ "${DISTRO}" == "Ubuntu" ]]; then
-      true || exiterr "deps failed (linux), exiting."
+      sudo apt update && sudo apt -y install ccache cmake || exiterr "deps failed (linux), exiting."
     else
       exiterr "deps failed (unsupported linux distro ${DISTRO}), exiting."
     fi
   elif [ "${OS}" == "Darwin" ]; then
-    brew install coreutils || exiterr "deps failed (mac), exiting."
+    brew install cmake coreutils || exiterr "deps failed (mac), exiting."
   else
     exiterr "deps failed (unsupported os ${OS}), exiting."
   fi

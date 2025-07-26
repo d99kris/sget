@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (c) 2018-2022 Kristofer Berggren
+# Copyright (c) 2018-2025 Kristofer Berggren
 # All rights reserved.
 #
 # sget is distributed under the MIT license, see LICENSE for details.
@@ -49,9 +49,9 @@ show_usage()
 
 show_version()
 {
-  echo "sget v1.04"
+  echo "sget v1.05"
   echo ""
-  echo "Copyright (c) 2018-2022 Kristofer Berggren"
+  echo "Copyright (c) 2018-2025 Kristofer Berggren"
   echo ""
   echo "sget is distributed under the MIT license."
   echo ""
