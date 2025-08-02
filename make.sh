@@ -68,11 +68,14 @@ esac
 if [[ "${DEPS}" == "1" ]]; then
   OS="$(uname)"
   if [ "${OS}" == "Linux" ]; then
-    DISTRO="$(lsb_release -i | awk -F':\t' '{print $2}')"
-    if [[ "${DISTRO}" == "Ubuntu" ]]; then
-      sudo apt update && sudo apt -y install ccache cmake || exiterr "deps failed (linux), exiting."
+    unset NAME
+    eval $(grep "^NAME=" /etc/os-release 2> /dev/null)
+    if [[ "${NAME}" == "Ubuntu" ]]; then
+      sudo apt update && sudo apt -y install cmake || exiterr "deps failed (${NAME}), exiting."
+    elif [[ "${NAME}" == "Rocky Linux" ]]; then
+      sudo dnf -y install cmake || exiterr "deps failed (${NAME}), exiting."
     else
-      exiterr "deps failed (unsupported linux distro ${DISTRO}), exiting."
+      exiterr "deps failed (unsupported linux distro ${NAME}), exiting."
     fi
   elif [ "${OS}" == "Darwin" ]; then
     brew install cmake coreutils || exiterr "deps failed (mac), exiting."

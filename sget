@@ -49,7 +49,7 @@ show_usage()
 
 show_version()
 {
-  echo "sget v1.05"
+  echo "sget v1.06"
   echo ""
   echo "Copyright (c) 2018-2025 Kristofer Berggren"
   echo ""
